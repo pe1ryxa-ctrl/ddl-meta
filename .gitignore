@@ -1,0 +1,15 @@
+# ddl-meta: корінь екосистеми DDL. Підпроєкти — окремі репозиторії
+/Server/
+/STC/
+/SRC/
+/DAI/
+/Sensor HUB/
+/Shared_Skills/
+/_archive/
+/_kit/
+.env
+*.log
+.DS_Store
+# генерується l2l1-kit/sync.py на кожній машині
+/CLAUDE.md
+/.agents/

@@ -1,0 +1,49 @@
+# ecosystem.toml — опис екосистеми DDL для l2l1-kit/sync.py (корінь = місце цього файлу)
+name = "Danger Drones Lab (DDL)"
+tags_reserved = ["KSRV", "KWS", "KSIM", "KNODE", "KQGC"]
+table_note = "Спільні скіли: `Shared_Skills/skills/*` (ADLP, ddl-firmware-builder, ddl-firmware-deployer). Архів старої системи: `_archive/`. Гілки: Server `main`, SRC `v1.2-stable-dev`/`master`, STC `main`."
+
+[[projects]]
+dir = "Server"
+tag = "DDL"
+ssot = "DDL"
+title = "DDL Server (FastAPI portal)"
+target = "VPS, CI/CD через GitHub Actions"
+rules = "i18n-аудит, Redis DB≠0, Alembic bool defaults; деплой робить CI після push у main"
+hil = false
+
+[[projects]]
+dir = "STC"
+tag = "STC"
+ssot = "STC"
+title = "STC — VTX Control (ESP32-C3)"
+target = "ESP32-C3, Web Flasher"
+rules = "Secure Boot; нові плати лише через Web Flasher; R2-деплой лише за командою Gans"
+hil = false
+
+[[projects]]
+dir = "SRC"
+tag = "SRC"
+ssot = "VRX"
+title = "SRC — Smart VRX Control (ESP32-C3)"
+target = "ESP32-C3"
+rules = "R2/prod-деплой лише після фізичної перевірки Gans"
+hil = false
+
+[[projects]]
+dir = "DAI"
+tag = "DAI"
+ssot = "DAI"
+title = "DAI — Danger AI (knowledge assistant)"
+target = "macOS, Ollama; Gemini API (платно)"
+rules = "Cost Control; OKF Integrity; Link Validation"
+hil = false
+
+[[projects]]
+dir = "Sensor HUB"
+tag = "HUB"
+ssot = "HUB"
+title = "Sensor Fusion Hub (RP2350)"
+target = "RP2350 Pico 2 W"
+rules = "HIL Validation Gate: done лише після письмового PASS від Gans"
+hil = true

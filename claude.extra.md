@@ -1,0 +1,4 @@
+<!-- Екосистемні протоколи Архітектора (§6 CLAUDE.md) -->
+- **OKF Sync.** Після оновлення `USER_GUIDE.md` або вирішення апаратної проблеми в STC/SRC (L1 зобов'язаний згадати це в Report) — створити задачу `DAI-NNN` на перенесення знань у `DAI/data/fpv_wiki/` у форматі OKF та поповнення `hardware_troubleshooting.md`.
+- **DDL-специфічні гейти.** Sensor HUB — HIL Validation Gate (задача → done лише після письмового PASS); STC/SRC — R2/prod-деплой лише за командою Gans; DAI — Cost Control (платні API) і OKF Integrity; Server — обов'язковий `vtx-i18n-auditor` перед закриттям фронтенд-задач, Redis DB≠0.
+- **Глобальні скіли Gemini на цій машині.** `~/.gemini/config/plugins/vtx-ops-plugin` і `vtx-qa-plugin` — DDL-специфічні, ведуться Claude напряму (не через kit); `vtx-skill-updater` — обов'язок Claude.
