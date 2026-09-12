@@ -13,3 +13,6 @@
 # генерується l2l1-kit/sync.py на кожній машині
 /CLAUDE.md
 /.agents/
+
+# робочі файли Claude
+Claude outputs/
