@@ -42,3 +42,6 @@ Dual Persona Mode (одна модель у двох ролях через `/l1_
 - **SSOT:** Holy Trinity (`Context_X / Plan_X / Changelog_X`) веде L1; `Global_Context.md`, `Global_Roadmap.md`, `Global_Changelog.md` веде Claude. Plan містить лише беклог.
 - **Задачі:** шаблон `DDL/.agents/TASK_TEMPLATE.md`; ID — `<TAG>-<NNN>` (DDL, STC, SRC, DAI, HUB); файли комітяться в git проєкту; закриті — у `tasks/done/`.
 - **OKF Sync Protocol:** якщо в SRC/STC оновлено `USER_GUIDE.md` або вирішено апаратну проблему (L1 зазначає це в Report), Claude ставить задачу L1 DAI на перенесення знань у `DAI/data/fpv_wiki/` (формат OKF) та поповнення `hardware_troubleshooting.md`.
+
+## Квота L1
+Облік витрат тижневої квоти Antigravity (Gemini / Claude+GPT) — `L1_Quota_Ledger.md`; скриншот «Models & Usage» після кожного Report. У тиждень дефіциту механічні задачі бере Архітектор (виняток із «не пише код», diff перевіряють незалежні рев'ю-агенти, приймає Gans).
