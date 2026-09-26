@@ -8,6 +8,7 @@
     *   **Роль:** Центральний вузол зв'язку, авторизації (SSO), збереження прошивок (OTA) та веб-портал.
     *   **Технології:** FastAPI (Python), PostgreSQL, Redis, Vanilla JS SPA, Authentik, Cloudflare R2.
     *   **Взаємодія:** Надає REST API та WebSerial Web Flasher для хардверних модулів (STC, SRC), Web UI для користувачів, дані для DAI.
+    *   **Деплой (з 26.09.2026, DDL-004):** пуш коду в `main` → тести на Python 3.12 → деплой рівно перевіреного коміту на VPS (`alembic upgrade head` включно). Пуш лише `.agents/`, кореневих `*.md`, `brain/` деплою не запускає. Інших способів деплою немає.
 
 2.  **STC (Smart Transmitter Control / VTX)**
     *   **Роль:** Бортовий модуль керування відеопередавачем (VTX) на дроні (ESP32-C3). Підтримує протоколи SmartAudio та Tramp.
@@ -21,7 +22,7 @@
 
 4.  **DAI (Danger AI)**
     *   **Роль:** Автономний AI-бот-асистент для FPV-пілотів: підключається WebSocket-клієнтом до DDL Server (`/dai` firehose), відповідає в чаті спільноти, збирає та синтезує базу знань з веб-джерел, форумів і Telegram-чатів.
-    *   **Технології:** Python 3.12 / FastAPI (монолітний `dai_backend.py`, macOS); інференс — локальна `Gemma 12B` через Ollama Tool Calling (Agentic Multi-hop RAG, `OLLAMA_NUM_CTX` 32K); база знань — Pure OKF Markdown-wiki (`data/fpv_wiki/`) з лексичним пошуком `bm25s` (вектори/ембеддінги відкинуто); історія чату — SQLite (`chat_history.db`, SQL LIKE); генерація wiki та Vision — Gemini API (`gemini-3.1-flash-lite` масово, `gemini-3.1-pro-preview` для repair-агента); харвестинг Telegram — Telethon (MTProto); ProcessGuard (PID-локи, ліміти API).
+    *   **Технології:** Python 3.14 (Homebrew 3.14.7; лінива оцінка анотацій ховає помилки, що на старших версіях падають на імпорті — перевіряти перед міграцією на інший ПК) / FastAPI (монолітний `dai_backend.py`, macOS); інференс — локальна `Gemma 12B` через Ollama Tool Calling (Agentic Multi-hop RAG, `OLLAMA_NUM_CTX` 32K); база знань — Pure OKF Markdown-wiki (`data/fpv_wiki/`) з лексичним пошуком `bm25s` (вектори/ембеддінги відкинуто); історія чату — SQLite (`chat_history.db`, SQL LIKE); генерація wiki та Vision — Gemini API (`gemini-3.1-flash-lite` масово, `gemini-3.1-pro-preview` для repair-агента); харвестинг Telegram — Telethon (MTProto); ProcessGuard (PID-локи, ліміти API).
     *   **Взаємодія:** Отримує тригери й надсилає відповіді через WebSocket DDL Server (усі фрейми з `branch_id`); синхронізує знання з STC/SRC (`USER_GUIDE.md`, апаратні кейси) через OKF Sync Protocol.
 
 5.  **Sensor HUB (Sensor Fusion Hub)**
@@ -44,4 +45,4 @@ Dual Persona Mode (одна модель у двох ролях через `/l1_
 - **OKF Sync Protocol:** якщо в SRC/STC оновлено `USER_GUIDE.md` або вирішено апаратну проблему (L1 зазначає це в Report), Claude ставить задачу L1 DAI на перенесення знань у `DAI/data/fpv_wiki/` (формат OKF) та поповнення `hardware_troubleshooting.md`.
 
 ## Квота L1
-Облік витрат тижневої квоти Antigravity (Gemini / Claude+GPT) — `L1_Quota_Ledger.md`; скриншот «Models & Usage» після кожного Report. У тиждень дефіциту механічні задачі бере Архітектор (виняток із «не пише код», diff перевіряють незалежні рев'ю-агенти, приймає Gans).
+Облік витрат тижневої квоти Antigravity (Gemini / Claude+GPT) — `L1_Quota_Ledger.md`; скриншот «Models & Usage» після кожного Report. **L2-фолбек — лише за явним розпорядженням Gans на конкретну задачу** (протокол `DDL/CLAUDE.md` §4): виконує субагент Архітектора, коміти `[L2 fallback]`, рев'ю — інший субагент. Архітектор фолбек як спосіб розвантажити чергу не пропонує; дефіцит квоти — привід для черги або паузи, не для фолбеку.
