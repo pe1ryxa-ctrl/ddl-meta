@@ -40,6 +40,7 @@
 
 Dual Persona Mode (одна модель у двох ролях через `/l1_mode`) скасовано: роль визначається інструментом. Стара конфігурація — `DDL/_archive/`.
 
+- **Підлеглі сесії Claude (з 2026-09-29, протокол kit `28f1c09`).** Основна сесія Архітектора — на Mac («Виправлення DAI»): проєкти, бойовий бот і його `.env`, злиття, задачі, виконавці. Підлегла сесія «ПК-90» (Windows-ПК з RTX 5060, Remote Control) тримає лише сам ПК-90: Ollama з `gemma4:26b` (модель бота по LAN), завдання Планувальника (прогрів о вході, вимкнення о 22:00, журнал `/api/ps` о 09:05 і 12:00), локальні заміри й прогони тестів на Windows. Вона не комітить в основні гілки. Будь-яку зміну моделі на ПК-90 спершу погоджує Gans (бот користується нею наживо). Поділ погодив Gans 29.09.
 - **SSOT:** Holy Trinity (`Context_X / Plan_X / Changelog_X`) веде L1; `Global_Context.md`, `Global_Roadmap.md`, `Global_Changelog.md` веде Claude. Plan містить лише беклог.
 - **Задачі:** шаблон `DDL/.agents/TASK_TEMPLATE.md`; ID — `<TAG>-<NNN>` (DDL, STC, SRC, DAI, HUB); файли комітяться в git проєкту; закриті — у `tasks/done/`.
 - **OKF Sync Protocol:** якщо в SRC/STC оновлено `USER_GUIDE.md` або вирішено апаратну проблему (L1 зазначає це в Report), Claude ставить задачу L1 DAI на перенесення знань у `DAI/data/fpv_wiki/` (формат OKF) та поповнення `hardware_troubleshooting.md`.
