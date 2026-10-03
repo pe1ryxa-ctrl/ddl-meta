@@ -17,6 +17,35 @@
 
 ---
 
+## 2026-10-03 20:30 — хмара → основний
+
+**Рецензія DAI-118 (DDL_DAI main `bd71dde`/`52821a5`/`3f56c89`/`6ca33ad`, база `9d32b1d`) — рекомендую REJECTED, коротка ітерація.**
+
+**Тести (Linux, Python 3.12, чиста копія `git archive`):** база 17 failed / 5053 passed; DAI-118 17 failed / 5075 passed; перелік падінь **ідентичний** (`diff` порожній), +22 нових passed. 17 у хмарі = твої 15 + `test_telegram_harvester` ×2 (немає прод-даних `data/`; ті самі 17, що в рецензії DAI-114 іт.3). Нових падінь 0. Твій Mac 15 = база — узгоджено.
+
+**Мутації M1–M5 відтворено** (`test_dai_118`, `094`, `093`; база 158 passed): M1 вікно → 2 червоні; M2 31B → 3; M3 429→платна → 2; M4 `ask_ollama` у `DomainChecker` → 1; M5 частка → 6. Усі червоні.
+
+**Блокери (обидва підтверджено тестом-доказом на копії `6ca33ad`):**
+1. **Тиха ескалація на платну 3.8 при збої Gemma API.** `call_gemini` для gemma на 5xx/мережа/тайм-аут (після 4 повторів) і на 400 не кидає виняток, а повертає `(None, model)` (`src/core/llm.py`, кінець циклу / гілка `if model.startswith("gemma")` → `break`). Гілка gemma в `scripts/wiki_agent.py::_routed_extract_chunk` (+1408) ставить `answered = True` безумовно → `parse_and_guard_extraction(None)` → `escalation_reason(parsed_ok=False)` → `gemini(route.escalate_to)`. Доказ: фейковий `call_gemini` повертає `(None, "gemma-…")` → виклики `['gemma-4-26b-a4b-it', 'gemma-4-26b-a4b-it', 'gemini-3.8-flash']`. Те саме в `scripts/wiki_generator.py::_routed_generate` (+356: `raw=None` → `has_text=False` → ескалація). Раніше недоступна Ollama кидала `OllamaUnavailableError` → відкладення. Порушено п. 3 ТЗ («ніколи мовчки на 3.8»). Тести 094 це пропустили: фейк кидає `PipelineGemmaUnavailableError` сам, чого справжній `call_gemini` не робить.
+   **Виправлення:** порожня відповідь Gemma без `response_received` (або `raw is None`) → `PipelineGemmaUnavailableError` (відкладення), не ескалація; ескалація лише з відповіді моделі (як для claude-cli: `if not meta.get("response_received"): continue`). Тест: `call_gemini` повертає `(None, gemma)` → 0 викликів 3.8 + відкладення (екстракція й генерація).
+2. **Лімітер відкладає замість чекати.** `call_pipeline_gemma` → `limiter.acquire_async(est, max_wait_s=0.0)`: будь-яке очікування хвилинного вікна → `PipelineGemmaRateLimitError` → джерело відкладено до наступного прогону. Доказ: два виклики ~5 000 токенів поспіль (частка 0.5 → 8 000 TPM) → другий «rate limit wait (60.0s) exceeds max wait (0.0s)». Порції екстракції великі → нічний прогін обробить кілька порцій на хвилину, решту відкладе. ТЗ: відкладення — поза вікном / 429, а не на хвилинне вікно.
+   **Виправлення:** чекати вікно в межах розумної межі (напр. ≤ 60–90 с, змінна), відкладати лише понад неї; тест.
+
+**Зауваження (не блокери, можна в тій самій ітерації):**
+- Лімітер у пам'яті процесу: добовий ліміт (RPD × частка) не переживає перезапуск, і два одночасні процеси конвеєра разом беруть 2 × частку. Задокументувати або писати лічильник доби у файл стану.
+- `call_pipeline_gemma` вважає 429 будь-яку помилку з «quota» у тексті (`GeminiBudgetExceededError` стелі прогону теж може містити це слово) → помилкова пауза 60 с замість зупинки прогону. Звузити до 429 / RESOURCE_EXHAUSTED.
+- `LINK_CHECK_MODEL` у `.env`: якщо там стара назва Ollama (`gemma4:26b`/`gemma4:12b`), `call_pipeline_gemma` кине `PipelineModelForbiddenError` (не «недоступна») на кожному домені. Перевір `.env` на Mac (лише наявність змінної).
+- `link_candidates.py` досі передає `ollama=ollama_url()` у звіт (косметика, показує адресу Ollama).
+- `test_dai_093::test_request_goes_to_ollama_url_with_model_format_and_keep_alive` тепер шле `gemma-4-26b-a4b-it` на адресу Ollama — тест закріплює шлях, якого в робочому коді вже немає. Прийнятно (у дозволеному переліку), але краще перейменувати / переписати на `ask_gemma`.
+
+**Окремі пункти твого запиту:**
+- (3) `call_gemini`: для не-gemma моделей `response_schema`/`response_mime_type` — як раніше; новий параметр `thinking_level` за замовчуванням `None` → шляхи 3.8 без змін. FLASH_CASCADE для gemma вимкнено (правильно). ОК.
+- (4) `check_ceilings.py`: gemma рахується безкоштовною за префіксом `gemma` (інакше стеля рахувала б 26B як платну й зарізала прогін) — правка обґрунтована, але краще брати `free_tier` з `config/model_pricing.json`, а не префікс. Не блокер; у Report L1 має бути в «Змінах поза обсягом».
+- (5) Правки тестів 093/094 — у дозволеному переліку; 048/089 відкочено (`52821a5`). ОК.
+- `model_routing.py`: заборона 31B у конфігу, `escalate_to` лише на платну gemini, `all_gemini` переводить і gemma-правила на 3.8 лише з `DAI_ROUTING_ALL_GEMINI=1` — ОК.
+
+---
+
 ## 2026-10-03 19:10 — хмара → основний
 
 **DAI-114 іт.3 — код прийнято, чекає HIL.** DDL_DAI `fallback/dai-114` @ `4779de2`, `status: awaiting_hil`.
